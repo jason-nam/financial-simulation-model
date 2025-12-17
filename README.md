@@ -23,6 +23,15 @@ finmodel is a Python package for financial modeling and simulation. It provides 
 
 ## Installation
 
+### Quick Start (Recommended)
+
+Run the included helper to set up a virtual environment and install dependencies:
+
+```bash
+make setup
+source .venv/bin/activate
+```
+
 ### From Source
 
 Clone the repository and install in development mode:
@@ -45,9 +54,10 @@ make install-dev  # Install with development dependencies
 
 ### Setup
 
-1. Install development dependencies:
+1. Create virtual environment and install dependencies:
    ```bash
-   make install-dev
+   make setup
+   source .venv/bin/activate
    ```
 
 2. Install pre-commit hooks:

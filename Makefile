@@ -1,4 +1,11 @@
-.PHONY: help install install-dev test lint format type-check clean pre-commit ci
+# Check if .venv exists and use it; otherwise fallback to system commands
+VENV_BIN := .venv/bin
+ifeq ($(wildcard $(VENV_BIN)/python),)
+	VENV_BIN := .
+endif
+
+# Prefix for commands (handle empty VENV_BIN if needed, though here we default to .)
+CMD_PREFIX := $(VENV_BIN)/
 
 help:  ## Show this help message
 	@echo "Usage: make [target]"
@@ -7,31 +14,41 @@ help:  ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
 install:  ## Install the package
-	pip install -e .
+	$(CMD_PREFIX)pip install -e .
 
 install-dev:  ## Install the package with development dependencies
-	pip install -e ".[dev]"
+	$(CMD_PREFIX)pip install -e ".[dev]"
+
+venv:  ## Create a virtual environment
+	python3 -m venv .venv
+	@echo "Virtual environment created in .venv"
+	@echo "To activate, run: source .venv/bin/activate"
+	@echo "Then run: make install-dev"
+
+setup: venv  ## Create venv and install dev dependencies
+	$(CMD_PREFIX)pip install --upgrade pip && $(CMD_PREFIX)pip install -e ".[dev]"
+	@echo "Setup complete. Don't forget to run: source .venv/bin/activate"
 
 test:  ## Run tests with coverage
-	pytest
+	$(CMD_PREFIX)pytest
 
 test-verbose:  ## Run tests with verbose output
-	pytest -vv
+	$(CMD_PREFIX)pytest -vv
 
 lint:  ## Run linting checks (ruff)
-	ruff check src tests
+	$(CMD_PREFIX)ruff check src tests
 
 lint-fix:  ## Run linting checks and fix issues
-	ruff check --fix src tests
+	$(CMD_PREFIX)ruff check --fix src tests
 
 format:  ## Format code with black
-	black src tests
+	$(CMD_PREFIX)black src tests
 
 format-check:  ## Check code formatting without making changes
-	black --check src tests
+	$(CMD_PREFIX)black --check src tests
 
 type-check:  ## Run type checking with mypy
-	mypy src tests
+	$(CMD_PREFIX)mypy src tests
 
 clean:  ## Clean up build artifacts and cache files
 	rm -rf build/
@@ -46,10 +63,10 @@ clean:  ## Clean up build artifacts and cache files
 	find . -type f -name "*.pyc" -delete
 
 pre-commit:  ## Install pre-commit hooks
-	pre-commit install
+	$(CMD_PREFIX)pre-commit install
 
 pre-commit-run:  ## Run pre-commit hooks on all files
-	pre-commit run --all-files
+	$(CMD_PREFIX)pre-commit run --all-files
 
 ci:  ## Run all CI checks (format, lint, type-check, test)
 	@echo "Running format check..."
